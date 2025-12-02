@@ -2,7 +2,7 @@
 
 ## 概述
 
-NewGameMaker渲染器系统提供了一个灵活的、可扩展的渲染架构，支持多种渲染后端（如OpenGL和DirectX）。
+NewGameMaker渲染器系统提供了一个灵活的、可扩展的渲染架构，支持多种渲染后端（如OpenGL、DirectX、Vulkan和软件渲染器）。
 
 ## 架构
 
@@ -15,6 +15,12 @@ NewGameMaker渲染器系统提供了一个灵活的、可扩展的渲染架构�
 ### DirectX渲染器
 基于DirectX的渲染器实现，提供Windows平台上的高性能渲染。
 
+### Vulkan渲染器
+基于Vulkan的渲染器实现，提供现代、低开销的GPU访问和高性能渲染。
+
+### 软件渲染器
+基于CPU的软件渲染器实现，提供纯软件渲染功能，适用于没有硬件加速的环境或特殊渲染需求。
+
 ### 渲染器工厂
 用于创建和管理不同类型的渲染器实例。
 
@@ -22,7 +28,7 @@ NewGameMaker渲染器系统提供了一个灵活的、可扩展的渲染架构�
 
 ### 初始化渲染器
 ```cpp
-IRenderer* renderer = RendererFactory::CreateRenderer(RendererType::OpenGL);
+IRenderer* renderer = RendererFactory::CreateRenderer(RendererType::Vulkan);
 if (renderer && renderer->Initialize(hWnd))
 {
     // 渲染器初始化成功
