@@ -85,4 +85,11 @@ private:
     
     // Shader management
     std::unordered_map<unsigned int, ShaderData> shaders;
+    
+    // Helper methods for texture loading
+    unsigned int CreatePlaceholderTexture(unsigned int textureId, const std::string& filename);
+    unsigned int LoadTextureFromFile(const std::string& filename, unsigned int textureId);
+    
+    // Helper methods for shader loading
+    std::string LoadShaderFromFile(const std::string& filename, bool isVertexShader);
 };

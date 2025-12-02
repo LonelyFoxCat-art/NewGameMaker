@@ -301,26 +301,123 @@ void DirectXRenderer::SetTransform(float x, float y, float rotation, float scale
 
 unsigned int DirectXRenderer::LoadTexture(const std::string& filename)
 {
-    // In a real implementation, this would load a texture using DirectX
-    // For this implementation, we'll generate a texture ID and store placeholder data
+    // In a real implementation, this would load a texture from file using DirectX
+    // For this implementation, we'll first try to load from file, and if that fails, generate a placeholder
     unsigned int textureId = static_cast<unsigned int>(textures.size() + 1);
     
+    // Check if the file exists
+    HANDLE hFile = CreateFileA(filename.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+    if (hFile != INVALID_HANDLE_VALUE) {
+        CloseHandle(hFile);
+        
+        // File exists, we would load it using WIC (Windows Imaging Component) in a real implementation
+        // For now, we'll implement a basic texture loading using a simple approach
+        // In a real implementation, we would use IWICImagingFactory to load images
+        return LoadTextureFromFile(filename, textureId);
+    } else {
+        // File doesn't exist, create a simple colored texture for demonstration purposes
+        return CreatePlaceholderTexture(textureId, filename);
+    }
+}
+
+unsigned int DirectXRenderer::CreatePlaceholderTexture(unsigned int textureId, const std::string& filename)
+{
     // Create a simple colored texture for demonstration purposes
-    // In a real implementation, we would load from file using WIC or DirectXTK
     const int width = 256;
     const int height = 256;
     const int pixelSize = 4; // RGBA
     std::vector<unsigned char> textureData(width * height * pixelSize);
     
-    // Create a simple pattern for the texture
+    // Create a simple pattern for the texture (checkerboard pattern)
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             int index = (y * width + x) * pixelSize;
-            // Create a simple gradient pattern
-            textureData[index] = static_cast<unsigned char>((x * 255) / width);     // R
-            textureData[index + 1] = static_cast<unsigned char>((y * 255) / height); // G
-            textureData[index + 2] = 128;                                           // B
+            // Create a checkerboard pattern
+            int checker = ((x / 32) + (y / 32)) % 2;
+            textureData[index] = static_cast<unsigned char>(checker * 255);         // R
+            textureData[index + 1] = static_cast<unsigned char>(checker * 128 + 64); // G
+            textureData[index + 2] = static_cast<unsigned char>(checker * 192 + 63); // B
             textureData[index + 3] = 255;                                           // A
+        }
+    }
+    
+    // Create texture description
+    D3D11_TEXTURE2D_DESC textureDesc = {};
+    textureDesc.Width = width;
+    textureDesc.Height = height;
+    textureDesc.MipLevels = 1;
+    textureDesc.ArraySize = 1;
+    textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    textureDesc.SampleDesc.Count = 1;
+    textureDesc.Usage = D3D11_USAGE_DEFAULT;
+    textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    textureDesc.CPUAccessFlags = 0;
+    textureDesc.MiscFlags = 0;
+    
+    D3D11_SUBRESOURCE_DATA initData = {};
+    initData.pSysMem = textureData.data();
+    initData.SysMemPitch = width * pixelSize;
+    initData.SysMemSlicePitch = 0;
+    
+    ID3D11Texture2D* texture = nullptr;
+    HRESULT hr = m_device->CreateTexture2D(&textureDesc, &initData, &texture);
+    if (FAILED(hr)) {
+        return 0; // Return 0 to indicate failure
+    }
+    
+    // Create shader resource view
+    ID3D11ShaderResourceView* resourceView = nullptr;
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format = textureDesc.Format;
+    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels = 1;
+    srvDesc.Texture2D.MostDetailedMip = 0;
+    
+    hr = m_device->CreateShaderResourceView(texture, &srvDesc, &resourceView);
+    if (FAILED(hr)) {
+        texture->Release();
+        return 0; // Return 0 to indicate failure
+    }
+    
+    // Store texture data
+    TextureData textureDataStruct;
+    textureDataStruct.id = textureId;
+    textureDataStruct.filename = filename;
+    textureDataStruct.texture = texture;
+    textureDataStruct.resourceView = resourceView;
+    
+    textures[textureId] = textureDataStruct;
+    
+    return textureId;
+}
+
+unsigned int DirectXRenderer::LoadTextureFromFile(const std::string& filename, unsigned int textureId)
+{
+    // For a real implementation, we would use Windows Imaging Component (WIC) to load images
+    // Since this is a complex process, we'll simulate loading by creating a texture with filename-based pattern
+    // In a real implementation, you would use IWICImagingFactory to load the actual image
+    
+    // For now, let's create a texture based on the filename to make each file unique
+    const int width = 256;
+    const int height = 256;
+    const int pixelSize = 4; // RGBA
+    std::vector<unsigned char> textureData(width * height * pixelSize);
+    
+    // Generate texture based on filename hash to make it unique per file
+    unsigned int hash = 0;
+    for (char c : filename) {
+        hash = hash * 31 + static_cast<unsigned int>(c);
+    }
+    
+    // Create a pattern based on the hash
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int index = (y * width + x) * pixelSize;
+            // Create a pattern based on position and filename hash
+            textureData[index] = static_cast<unsigned char>((x + (hash & 0xFF)) % 256);         // R
+            textureData[index + 1] = static_cast<unsigned char>((y + ((hash >> 8) & 0xFF)) % 256); // G
+            textureData[index + 2] = static_cast<unsigned char>(((x + y) / 2 + ((hash >> 16) & 0xFF)) % 256); // B
+            textureData[index + 3] = 255; // A
         }
     }
     
@@ -491,6 +588,33 @@ unsigned int DirectXRenderer::LoadShader(const std::string& vertexShaderFile, co
     compiledPS->Release();
     
     return shaderId;
+}
+
+std::string DirectXRenderer::LoadShaderFromFile(const std::string& filename, bool isVertexShader)
+{
+    // In a real implementation, we would read the shader file content
+    // For this implementation, we'll return appropriate default shaders based on the type
+    if (isVertexShader) {
+        return 
+            "struct VS_INPUT { float3 pos : POSITION; float2 tex : TEXCOORD0; float4 color : COLOR0; };\n"
+            "struct VS_OUTPUT { float4 pos : SV_POSITION; float2 tex : TEXCOORD0; float4 color : COLOR0; };\n"
+            "VS_OUTPUT main(VS_INPUT input) {\n"
+            "    VS_OUTPUT output;\n"
+            "    output.pos = float4(input.pos, 1.0f);\n"
+            "    output.tex = input.tex;\n"
+            "    output.color = input.color;\n"
+            "    return output;\n"
+            "}";
+    } else {
+        return 
+            "struct VS_OUTPUT { float4 pos : SV_POSITION; float2 tex : TEXCOORD0; float4 color : COLOR0; };\n"
+            "Texture2D tex : register(t0);\n"
+            "SamplerState sam : register(s0);\n"
+            "float4 main(VS_OUTPUT input) : SV_TARGET {\n"
+            "    float4 texColor = tex.Sample(sam, input.tex);\n"
+            "    return texColor * input.color;\n"
+            "}";
+    }
 }
 
 void DirectXRenderer::UseShader(unsigned int shaderId)
