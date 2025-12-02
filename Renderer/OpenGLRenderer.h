@@ -8,6 +8,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <algorithm>
 
 // OpenGL渲染器类
 class OpenGLRenderer : public IRenderer
