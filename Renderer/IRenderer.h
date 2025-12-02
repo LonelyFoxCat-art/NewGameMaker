@@ -34,4 +34,11 @@ public:
     // 加载和使用纹理
     virtual unsigned int LoadTexture(const std::string& filename) = 0;
     virtual void UseTexture(unsigned int textureId) = 0;
+    
+    // 加载和使用着色器
+    virtual unsigned int LoadShader(const std::string& vertexShaderFile, const std::string& fragmentShaderFile) = 0;
+    virtual void UseShader(unsigned int shaderId) = 0;
+    
+    // 设置渲染表面
+    virtual void SetSurface(unsigned int width, unsigned int height) = 0;
 };

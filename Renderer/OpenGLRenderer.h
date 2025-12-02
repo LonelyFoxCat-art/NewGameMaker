@@ -39,6 +39,13 @@ public:
     // 加载和使用纹理
     unsigned int LoadTexture(const std::string& filename);
     void UseTexture(unsigned int textureId);
+    
+    // 加载和使用着色器
+    unsigned int LoadShader(const std::string& vertexShaderFile, const std::string& fragmentShaderFile);
+    void UseShader(unsigned int shaderId);
+    
+    // 设置渲染表面
+    void SetSurface(unsigned int width, unsigned int height);
 
 private:
     HWND m_hwnd;

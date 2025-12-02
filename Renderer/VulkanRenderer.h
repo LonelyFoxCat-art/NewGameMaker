@@ -39,6 +39,9 @@ public:
     virtual void SetTransform(float x, float y, float rotation, float scale = 1.0f) override;
     virtual unsigned int LoadTexture(const std::string& filename) override;
     virtual void UseTexture(unsigned int textureId) override;
+    virtual unsigned int LoadShader(const std::string& vertexShaderFile, const std::string& fragmentShaderFile) override;
+    virtual void UseShader(unsigned int shaderId) override;
+    virtual void SetSurface(unsigned int width, unsigned int height) override;
 
 private:
     // Vulkan objects
@@ -74,6 +77,17 @@ private:
     // Texture management
     std::unordered_map<unsigned int, VkImage> textures;
     unsigned int nextTextureId;
+    
+    // Shader management
+    std::unordered_map<unsigned int, VkShaderModule> vertexShaders;
+    std::unordered_map<unsigned int, VkShaderModule> fragmentShaders;
+    std::unordered_map<unsigned int, VkPipeline> shaderPipelines;
+    std::unordered_map<unsigned int, VkPipelineLayout> shaderPipelineLayouts;
+    unsigned int nextShaderId;
+    
+    // Surface management
+    unsigned int surfaceWidth;
+    unsigned int surfaceHeight;
 
     // Helper methods
     bool CreateInstance();

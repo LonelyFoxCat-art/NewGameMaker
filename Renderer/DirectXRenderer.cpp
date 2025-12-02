@@ -164,3 +164,21 @@ void DirectXRenderer::UseTexture(unsigned int textureId)
 {
     // 在实际实现中，这里需要绑定纹理资源
 }
+
+unsigned int DirectXRenderer::LoadShader(const std::string& vertexShaderFile, const std::string& fragmentShaderFile)
+{
+    // 在实际实现中，这里需要加载并编译着色器
+    // 为了简化，我们返回0表示未实现
+    return 0;
+}
+
+void DirectXRenderer::UseShader(unsigned int shaderId)
+{
+    // 在实际实现中，这里需要绑定着色器程序
+}
+
+void DirectXRenderer::SetSurface(unsigned int width, unsigned int height)
+{
+    // 在实际实现中，这里需要调整渲染表面大小
+    // 例如重新配置视口、缓冲区等
+}

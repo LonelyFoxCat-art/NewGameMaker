@@ -230,6 +230,69 @@ void SoftwareRenderer::UseTexture(unsigned int textureId)
     // For this example, we just acknowledge the texture is being used
 }
 
+unsigned int SoftwareRenderer::LoadShader(const std::string& vertexShaderFile, const std::string& fragmentShaderFile)
+{
+    // In a software renderer, shader loading would be a complex process
+    // involving parsing and implementing shader programs in software
+    // For this example, we'll return 0 to indicate unimplemented
+    return 0;
+}
+
+void SoftwareRenderer::UseShader(unsigned int shaderId)
+{
+    // In a real implementation, this would activate the shader program
+    // For this example, we just acknowledge the shader is being used
+}
+
+void SoftwareRenderer::SetSurface(unsigned int width, unsigned int height)
+{
+    // Clean up existing resources
+    if (oldBitmap) {
+        SelectObject(memoryDC, oldBitmap);
+    }
+    
+    if (bitmap) {
+        DeleteObject(bitmap);
+    }
+    
+    if (memoryDC) {
+        DeleteDC(memoryDC);
+    }
+    
+    // Update dimensions
+    this->width = width;
+    this->height = height;
+    
+    // Recreate the bitmap with new dimensions
+    BITMAPINFO bmi = {0};
+    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth = width;
+    bmi.bmiHeader.biHeight = -height; // Negative for top-down bitmap
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
+    
+    void* bits = nullptr;
+    bitmap = CreateDIBSection(deviceContext, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0);
+    if (!bitmap) {
+        return; // Failed to create new bitmap
+    }
+    
+    pixelBuffer = static_cast<BYTE*>(bits);
+    
+    // Create new memory DC and select bitmap
+    memoryDC = CreateCompatibleDC(deviceContext);
+    if (!memoryDC) {
+        DeleteObject(bitmap);
+        return; // Failed to create new DC
+    }
+    
+    oldBitmap = static_cast<HBITMAP>(SelectObject(memoryDC, bitmap));
+    
+    // Clear the new buffer
+    ClearBuffer();
+}
+
 // Helper methods implementation
 void SoftwareRenderer::ClearBuffer()
 {
