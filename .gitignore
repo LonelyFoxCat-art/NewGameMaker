@@ -1,5 +1,5 @@
-```cpp
-# Compiled and build artifacts
+```
+# Build artifacts
 *.o
 *.obj
 *.exe
@@ -7,85 +7,41 @@
 *.so
 *.a
 *.out
-*.pyc
-*.class
+
+# CMake build directories
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+Makefile
+cmake_install.cmake
 
 # Dependencies
-node_modules/
-venv/
-.venv/
-__pycache__/
-dist/
-build/
-target/
-.gradle/
-.mypy_cache/
-.pytest_cache/
+vcpkg_installed/
+.nuget/
+packages/
 
 # Logs and temp files
 *.log
 *.tmp
 *.swp
-*.swo
-
-# Environment
-.env
-.env.local
-*.env.*
 
 # Editors
 .vscode/
 .idea/
+*.sln
+*.vcxproj
+*.vcproj
+*.user
+*.userosscache
+*.suo
+*.db
+*.pidb
+*.svclog
 
-# System files
+# OS generated files
 .DS_Store
 Thumbs.db
-
-# Common compressed files
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
-
-# Coverage reports
-coverage/
-htmlcov/
-.coverage
-
-# Build system specific
-cmake-build-*/
-CMakeFiles/
-CMakeCache.txt
-Makefile
-*.cmake
-
-# Vulkan specific
-*.spv
-*.hlsl
-*.glsl
-
-# Debug and release builds
-Debug/
-Release/
-x64/
-x86/
-bin/
-obj/
+ehthumbs.db
+Icon?
+```
