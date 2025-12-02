@@ -5,7 +5,9 @@
 enum class RendererType
 {
     OpenGL,
-    DirectX
+    DirectX,
+    Vulkan,
+    Software
 };
 
 class RendererFactory

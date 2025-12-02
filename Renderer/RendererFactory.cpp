@@ -1,6 +1,8 @@
 #include "RendererFactory.h"
 #include "OpenGLRenderer.h"
 #include "DirectXRenderer.h"
+#include "VulkanRenderer.h"
+#include "SoftwareRenderer.h"
 
 IRenderer* RendererFactory::CreateRenderer(RendererType type)
 {
@@ -10,6 +12,10 @@ IRenderer* RendererFactory::CreateRenderer(RendererType type)
             return new OpenGLRenderer();
         case RendererType::DirectX:
             return new DirectXRenderer();
+        case RendererType::Vulkan:
+            return new VulkanRenderer();
+        case RendererType::Software:
+            return new SoftwareRenderer();
         default:
             return nullptr;
     }

@@ -23,6 +23,11 @@ target/
 *.tmp
 *.swp
 
+# Environment
+.env
+.env.local
+*.env.*
+
 # Editors
 .vscode/
 .idea/
@@ -30,11 +35,6 @@ target/
 # System files
 .DS_Store
 Thumbs.db
-
-# Environment
-.env
-.env.local
-*.env.*
 
 # Coverage
 coverage/
