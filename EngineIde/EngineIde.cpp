@@ -3,6 +3,8 @@
 
 #include "framework.h"
 #include "EngineIde.h"
+#include "../Renderer/RendererFactory.h"
+#include "../Renderer/IRenderer.h"
 
 #define MAX_LOADSTRING 100
 
@@ -10,6 +12,7 @@
 HINSTANCE hInst;                                // 当前实例
 WCHAR szTitle[MAX_LOADSTRING];                  // 标题栏文本
 WCHAR szWindowClass[MAX_LOADSTRING];            // 主窗口类名
+IRenderer* g_renderer = nullptr;                // 全局渲染器实例
 
 // 此代码模块中包含的函数的前向声明:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -105,6 +108,15 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }
 
+   // 创建并初始化渲染器
+   g_renderer = RendererFactory::CreateRenderer(RendererType::OpenGL);
+   if (g_renderer && !g_renderer->Initialize(hWnd))
+   {
+       // 如果渲染器初始化失败，销毁它
+       RendererFactory::DestroyRenderer(g_renderer);
+       g_renderer = nullptr;
+   }
+
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
@@ -144,13 +156,37 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_PAINT:
         {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: 在此处添加使用 hdc 的任何绘图代码...
-            EndPaint(hWnd, &ps);
+            if (g_renderer)
+            {
+                // 使用自定义渲染器进行绘制
+                g_renderer->BeginFrame();
+                
+                // 绘制一些示例内容
+                g_renderer->SetClearColor(0.2f, 0.3f, 0.4f, 1.0f); // 深蓝色背景
+                
+                // 绘制一个简单的矩形
+                g_renderer->DrawQuad(100.0f, 100.0f, 200.0f, 150.0f);
+                
+                g_renderer->EndFrame();
+            }
+            else
+            {
+                // 如果没有渲染器，则使用传统的GDI绘图
+                PAINTSTRUCT ps;
+                HDC hdc = BeginPaint(hWnd, &ps);
+                // TODO: 在此处添加使用 hdc 的任何绘图代码...
+                EndPaint(hWnd, &ps);
+            }
         }
         break;
     case WM_DESTROY:
+        // 清理渲染器
+        if (g_renderer)
+        {
+            g_renderer->Cleanup();
+            RendererFactory::DestroyRenderer(g_renderer);
+            g_renderer = nullptr;
+        }
         PostQuitMessage(0);
         break;
     default:
