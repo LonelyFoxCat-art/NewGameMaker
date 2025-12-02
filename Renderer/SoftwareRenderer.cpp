@@ -6,7 +6,7 @@
 SoftwareRenderer::SoftwareRenderer()
     : windowHandle(nullptr), deviceContext(nullptr), memoryDC(nullptr), 
       bitmap(nullptr), oldBitmap(nullptr), pixelBuffer(nullptr), 
-      width(0), height(0), nextTextureId(1), currentTextureId(0), currentShaderId(0)
+      width(0), height(0), nextTextureId(1), nextShaderId(1), currentTextureId(0), currentShaderId(0)
 {
     clearColor[0] = 0.0f; clearColor[1] = 0.0f; clearColor[2] = 0.0f; clearColor[3] = 1.0f;
     transform[0] = 0.0f; transform[1] = 0.0f; transform[2] = 0.0f; transform[3] = 1.0f;
@@ -91,6 +91,9 @@ void SoftwareRenderer::Cleanup()
         DeleteObject(pair.second);
     }
     textures.clear();
+    
+    // Clean up shaders
+    shaders.clear();
     
     pixelBuffer = nullptr;
     width = 0;
@@ -247,7 +250,7 @@ void SoftwareRenderer::UseTexture(unsigned int textureId)
 {
     // In a real implementation, this would bind the texture for rendering
     // For this example, we check if the texture exists and store it for use in rendering
-    if (textures.find(textureId) != textures.end()) {
+    if (textureId == 0 || textures.find(textureId) != textures.end()) {
         currentTextureId = textureId;
     } else {
         currentTextureId = 0; // No texture
@@ -259,7 +262,7 @@ unsigned int SoftwareRenderer::LoadShader(const std::string& vertexShaderFile, c
     // In a software renderer, shader loading would be a complex process
     // involving parsing and implementing shader programs in software
     // For this implementation, we'll create a basic shader ID system
-    unsigned int shaderId = nextTextureId++; // Use nextTextureId as shader ID counter
+    unsigned int shaderId = nextShaderId++; // Use nextShaderId as shader ID counter
     
     // In a real implementation, we would:
     // 1. Read the shader files
@@ -282,7 +285,7 @@ void SoftwareRenderer::UseShader(unsigned int shaderId)
 {
     // In a real implementation, this would activate the shader program
     // For this example, we check if the shader exists and store it for use
-    if (shaders.find(shaderId) != shaders.end()) {
+    if (shaderId == 0 || shaders.find(shaderId) != shaders.end()) {
         currentShaderId = shaderId;
     } else {
         currentShaderId = 0; // No shader
