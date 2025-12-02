@@ -3,6 +3,6 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="Engine/Engine.vcxproj" />
-  <Project Path="Runtime/Runtime.vcxproj" />
+  <Project Path="Engine/Engine.vcxproj" Id="6076ef07-48ba-47ea-a06a-b423778c8bd3" />
+  <Project Path="Runtime/Runtime.vcxproj" Id="cda40ce1-1205-40bc-b8a8-2b27e2b037cf" />
 </Solution>
