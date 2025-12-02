@@ -1,3 +1,4 @@
+```cpp
 # Compiled and build artifacts
 *.o
 *.obj
@@ -6,18 +7,20 @@
 *.so
 *.a
 *.out
+*.pyc
+*.class
 
 # Dependencies
 node_modules/
 venv/
 .venv/
 __pycache__/
-.mypy_cache/
-.pytest_cache/
 dist/
 build/
 target/
 .gradle/
+.mypy_cache/
+.pytest_cache/
 
 # Logs and temp files
 *.log
@@ -38,7 +41,12 @@ target/
 .DS_Store
 Thumbs.db
 
-# Common compressed files
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Compressed files
 *.zip
 *.gz
 *.tar
@@ -61,28 +69,4 @@ Thumbs.db
 *.tar.bz2
 *.tar.xz
 *.tar.zst
-
-# Coverage reports
-coverage/
-htmlcov/
-.coverage
-
-# Build system specific
-cmake-build-*/
-CMakeFiles/
-CMakeCache.txt
-Makefile
-*.cmake
-
-# Vulkan specific
-*.spv
-*.hlsl
-*.glsl
-
-# Debug and release builds
-Debug/
-Release/
-x64/
-x86/
-bin/
-obj/
+```

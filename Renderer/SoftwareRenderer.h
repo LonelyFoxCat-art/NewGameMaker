@@ -65,4 +65,5 @@ private:
     void UpdateWindow();
     int TransformX(float x);
     int TransformY(float y);
+    std::string ReadShaderFile(const std::string& filePath);
 };

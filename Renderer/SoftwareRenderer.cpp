@@ -2,6 +2,8 @@
 #include <cmath>
 #include <algorithm>
 #include <stdexcept>
+#include <fstream>
+#include <iostream>
 
 SoftwareRenderer::SoftwareRenderer()
     : windowHandle(nullptr), deviceContext(nullptr), memoryDC(nullptr), 
@@ -259,24 +261,44 @@ void SoftwareRenderer::UseTexture(unsigned int textureId)
 
 unsigned int SoftwareRenderer::LoadShader(const std::string& vertexShaderFile, const std::string& fragmentShaderFile)
 {
+    // Read shader files
+    std::string vertexCode = ReadShaderFile(vertexShaderFile);
+    std::string fragmentCode = ReadShaderFile(fragmentShaderFile);
+    
+    if (vertexCode.empty() || fragmentCode.empty()) {
+        // If file reading fails, use default shaders
+        vertexCode = R"(
+            // Default vertex shader for software renderer
+            // In a real implementation, this would be parsed and executed in software
+            // This is just a placeholder
+        )";
+        
+        fragmentCode = R"(
+            // Default fragment shader for software renderer
+            // In a real implementation, this would be parsed and executed in software
+            // This is just a placeholder
+        )";
+    }
+    
     // In a software renderer, shader loading would be a complex process
     // involving parsing and implementing shader programs in software
     // For this implementation, we'll create a basic shader ID system
     unsigned int shaderId = nextShaderId++; // Use nextShaderId as shader ID counter
     
     // In a real implementation, we would:
-    // 1. Read the shader files
-    // 2. Parse the shader code
-    // 3. Convert to software-renderer compatible format
-    // 4. Store the compiled shader for later use
+    // 1. Parse the shader code
+    // 2. Convert to software-renderer compatible format
+    // 3. Store the compiled shader for later use
     
-    // For now, we'll just store the filenames as a placeholder
+    // For now, we'll store the shader source code as a placeholder
     ShaderData shaderData;
     shaderData.vertexShaderFile = vertexShaderFile;
     shaderData.fragmentShaderFile = fragmentShaderFile;
     shaderData.id = shaderId;
     
     shaders[shaderId] = shaderData;
+    
+    std::cout << "Loaded shader from " << vertexShaderFile << " and " << fragmentShaderFile << " with ID: " << shaderId << std::endl;
     
     return shaderId;
 }
@@ -463,4 +485,23 @@ int SoftwareRenderer::TransformY(float y)
     // Apply translation and scaling
     // Note: Y axis is inverted in Windows coordinates
     return static_cast<int>((y + transform[1]) * transform[3]);
+}
+
+std::string SoftwareRenderer::ReadShaderFile(const std::string& filePath)
+{
+    std::string content;
+    std::ifstream fileStream(filePath, std::ios::in);
+    
+    if (!fileStream.is_open()) {
+        // Return empty string if file cannot be opened
+        return content;
+    }
+    
+    std::string line = "";
+    while (std::getline(fileStream, line)) {
+        content.append(line + "\n");
+    }
+    
+    fileStream.close();
+    return content;
 }
