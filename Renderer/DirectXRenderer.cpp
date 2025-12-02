@@ -641,11 +641,17 @@ void DirectXRenderer::SetSurface(unsigned int width, unsigned int height)
     // 在实际实现中，这里需要调整渲染表面大小
     // 例如重新配置视口、缓冲区等
     
+    if (!m_swapChain) return;
+    
     // Release current render target view
     if (m_renderTargetView) {
         m_renderTargetView->Release();
         m_renderTargetView = nullptr;
     }
+    
+    // Release any existing depth stencil resources if they exist
+    // (Note: The original Initialize doesn't create depth buffer, but we might want to add it)
+    // For now, just resize the swap chain
     
     // Resize the swap chain
     HRESULT hr = m_swapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
@@ -680,4 +686,12 @@ void DirectXRenderer::SetSurface(unsigned int width, unsigned int height)
     viewport.TopLeftX = 0;
     viewport.TopLeftY = 0;
     m_context->RSSetViewports(1, &viewport);
+    
+    // Update the scissor rectangle to match the viewport
+    D3D11_RECT scissorRect = {};
+    scissorRect.left = 0;
+    scissorRect.top = 0;
+    scissorRect.right = (LONG)width;
+    scissorRect.bottom = (LONG)height;
+    m_context->RSSetScissorRects(1, &scissorRect);
 }
