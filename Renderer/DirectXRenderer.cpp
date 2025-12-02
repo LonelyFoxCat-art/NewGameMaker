@@ -1,6 +1,8 @@
 #include "DirectXRenderer.h"
 #include <d3dcompiler.h>
 #include <cmath>
+#include <fstream>
+#include <sstream>
 
 DirectXRenderer::DirectXRenderer() 
     : m_hwnd(nullptr), m_device(nullptr), m_context(nullptr), 
@@ -592,29 +594,53 @@ unsigned int DirectXRenderer::LoadShader(const std::string& vertexShaderFile, co
 
 std::string DirectXRenderer::LoadShaderFromFile(const std::string& filename, bool isVertexShader)
 {
-    // In a real implementation, we would read the shader file content
-    // For this implementation, we'll return appropriate default shaders based on the type
-    if (isVertexShader) {
-        return 
-            "struct VS_INPUT { float3 pos : POSITION; float2 tex : TEXCOORD0; float4 color : COLOR0; };\n"
-            "struct VS_OUTPUT { float4 pos : SV_POSITION; float2 tex : TEXCOORD0; float4 color : COLOR0; };\n"
-            "VS_OUTPUT main(VS_INPUT input) {\n"
-            "    VS_OUTPUT output;\n"
-            "    output.pos = float4(input.pos, 1.0f);\n"
-            "    output.tex = input.tex;\n"
-            "    output.color = input.color;\n"
-            "    return output;\n"
-            "}";
-    } else {
-        return 
-            "struct VS_OUTPUT { float4 pos : SV_POSITION; float2 tex : TEXCOORD0; float4 color : COLOR0; };\n"
-            "Texture2D tex : register(t0);\n"
-            "SamplerState sam : register(s0);\n"
-            "float4 main(VS_OUTPUT input) : SV_TARGET {\n"
-            "    float4 texColor = tex.Sample(sam, input.tex);\n"
-            "    return texColor * input.color;\n"
-            "}";
+    // Attempt to open and read the shader file
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        // If file doesn't exist, return appropriate default shader based on type
+        if (isVertexShader) {
+            // Return default vertex shader
+            return 
+                "struct VS_INPUT {\n"
+                "    float3 pos : POSITION;\n"
+                "    float2 tex : TEXCOORD0;\n"
+                "    float4 color : COLOR0;\n"
+                "};\n"
+                "struct VS_OUTPUT {\n"
+                "    float4 pos : SV_POSITION;\n"
+                "    float2 tex : TEXCOORD0;\n"
+                "    float4 color : COLOR0;\n"
+                "};\n"
+                "VS_OUTPUT main(VS_INPUT input) {\n"
+                "    VS_OUTPUT output;\n"
+                "    output.pos = float4(input.pos, 1.0f);\n"
+                "    output.tex = input.tex;\n"
+                "    output.color = input.color;\n"
+                "    return output;\n"
+                "}";
+        } else {
+            // Return default pixel shader
+            return 
+                "struct VS_OUTPUT {\n"
+                "    float4 pos : SV_POSITION;\n"
+                "    float2 tex : TEXCOORD0;\n"
+                "    float4 color : COLOR0;\n"
+                "};\n"
+                "Texture2D tex : register(t0);\n"
+                "SamplerState sam : register(s0);\n"
+                "float4 main(VS_OUTPUT input) : SV_TARGET {\n"
+                "    float4 texColor = tex.Sample(sam, input.tex);\n"
+                "    return texColor * input.color;\n"
+                "}";
+        }
     }
+    
+    // Read the entire file content
+    std::stringstream shaderCode;
+    shaderCode << file.rdbuf();
+    file.close();
+    
+    return shaderCode.str();
 }
 
 void DirectXRenderer::UseShader(unsigned int shaderId)
