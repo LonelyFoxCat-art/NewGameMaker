@@ -348,11 +348,10 @@ unsigned int OpenGLRenderer::LoadShader(const std::string& vertexShaderFile, con
 
 void OpenGLRenderer::UseShader(unsigned int shaderId)
 {
-    // In a real implementation, this would activate the shader program
     if (shaderId != 0) {
         glUseProgram(shaderId);
     } else {
-        glUseProgram(0);  // Use fixed function pipeline or default shader
+        glUseProgram(0);
     }
 }
 
