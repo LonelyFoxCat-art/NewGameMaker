@@ -1,4 +1,3 @@
-```
 # Compiled and build artifacts
 *.o
 *.obj
@@ -39,12 +38,7 @@ target/
 .DS_Store
 Thumbs.db
 
-# Coverage
-coverage/
-htmlcov/
-.coverage
-
-# Compressed files
+# Common compressed files
 *.zip
 *.gz
 *.tar
@@ -67,4 +61,28 @@ htmlcov/
 *.tar.bz2
 *.tar.xz
 *.tar.zst
-```
+
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# Build system specific
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+Makefile
+*.cmake
+
+# Vulkan specific
+*.spv
+*.hlsl
+*.glsl
+
+# Debug and release builds
+Debug/
+Release/
+x64/
+x86/
+bin/
+obj/
