@@ -259,16 +259,7 @@ void SoftwareRenderer::UseTexture(unsigned int textureId)
 
 unsigned int SoftwareRenderer::LoadShader(const std::string& vertexShaderFile, const std::string& fragmentShaderFile)
 {
-    // In a software renderer, shader loading would be a complex process
-    // involving parsing and implementing shader programs in software
-    // For this implementation, we'll create a basic shader ID system
     unsigned int shaderId = nextShaderId++; // Use nextShaderId as shader ID counter
-    
-    // In a real implementation, we would:
-    // 1. Read the shader files
-    // 2. Parse the shader code
-    // 3. Convert to software-renderer compatible format
-    // 4. Store the compiled shader for later use
     
     // For now, we'll just store the filenames as a placeholder
     ShaderData shaderData;
