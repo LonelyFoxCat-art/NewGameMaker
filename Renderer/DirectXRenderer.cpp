@@ -129,10 +129,6 @@ void DirectXRenderer::SetClearColor(float r, float g, float b, float a)
 
 void DirectXRenderer::DrawQuad(float x, float y, float width, float height)
 {
-    // In a real implementation, this would create vertex buffers and draw calls
-    // For now, we'll implement a basic quad drawing using immediate mode approach
-    // which isn't available in D3D11, so we'll simulate it by using a simple vertex structure
-    
     // Define vertices for a quad (position only for simplicity)
     struct Vertex {
         float x, y, z;
@@ -151,15 +147,54 @@ void DirectXRenderer::DrawQuad(float x, float y, float width, float height)
         1, 3, 2   // Second triangle
     };
     
-    // In a real implementation, we would:
-    // 1. Create vertex buffer with these vertices
-    // 2. Create index buffer with these indices
-    // 3. Set up input layout
-    // 4. Set vertex and index buffers
-    // 5. Draw indexed
+    // Create vertex buffer
+    D3D11_BUFFER_DESC vertexBufferDesc = {};
+    vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+    vertexBufferDesc.ByteWidth = sizeof(Vertex) * 4;
+    vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     
-    // For this example, we'll just log the operation
-    // In a complete implementation, we'd need to set up the full pipeline
+    D3D11_SUBRESOURCE_DATA vertexData = {};
+    vertexData.pSysMem = vertices;
+    
+    ID3D11Buffer* vertexBuffer = nullptr;
+    HRESULT hr = m_device->CreateBuffer(&vertexBufferDesc, &vertexData, &vertexBuffer);
+    if (FAILED(hr)) {
+        return;
+    }
+    
+    // Create index buffer
+    D3D11_BUFFER_DESC indexBufferDesc = {};
+    indexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+    indexBufferDesc.ByteWidth = sizeof(WORD) * 6;
+    indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+    indexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    
+    D3D11_SUBRESOURCE_DATA indexData = {};
+    indexData.pSysMem = indices;
+    
+    ID3D11Buffer* indexBuffer = nullptr;
+    hr = m_device->CreateBuffer(&indexBufferDesc, &indexData, &indexBuffer);
+    if (FAILED(hr)) {
+        vertexBuffer->Release();
+        return;
+    }
+    
+    // Set vertex and index buffers
+    UINT stride = sizeof(Vertex);
+    UINT offset = 0;
+    m_context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+    m_context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R16_UINT, 0);
+    
+    // Set primitive topology
+    m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    
+    // Draw indexed
+    m_context->DrawIndexed(6, 0, 0);
+    
+    // Clean up temporary buffers
+    vertexBuffer->Release();
+    indexBuffer->Release();
 }
 
 void DirectXRenderer::DrawTriangle(float x1, float y1, float x2, float y2, float x3, float y3)
@@ -175,13 +210,35 @@ void DirectXRenderer::DrawTriangle(float x1, float y1, float x2, float y2, float
         { x3, y3, 0.0f }   // Vertex 3
     };
     
-    // In a real implementation, we would:
-    // 1. Create vertex buffer with these vertices
-    // 2. Set up input layout
-    // 3. Set vertex buffer
-    // 4. Draw
+    // Create vertex buffer
+    D3D11_BUFFER_DESC vertexBufferDesc = {};
+    vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+    vertexBufferDesc.ByteWidth = sizeof(Vertex) * 3;
+    vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     
-    // For this example, we'll just log the operation
+    D3D11_SUBRESOURCE_DATA vertexData = {};
+    vertexData.pSysMem = vertices;
+    
+    ID3D11Buffer* vertexBuffer = nullptr;
+    HRESULT hr = m_device->CreateBuffer(&vertexBufferDesc, &vertexData, &vertexBuffer);
+    if (FAILED(hr)) {
+        return;
+    }
+    
+    // Set vertex buffer
+    UINT stride = sizeof(Vertex);
+    UINT offset = 0;
+    m_context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+    
+    // Set primitive topology
+    m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    
+    // Draw
+    m_context->Draw(3, 0);
+    
+    // Clean up temporary buffer
+    vertexBuffer->Release();
 }
 
 void DirectXRenderer::DrawCircle(float centerX, float centerY, float radius, int segments)
@@ -203,13 +260,35 @@ void DirectXRenderer::DrawCircle(float centerX, float centerY, float radius, int
         vertices.push_back({x, y, 0.0f});
     }
     
-    // In a real implementation, we would:
-    // 1. Create vertex buffer with these vertices
-    // 2. Set up input layout
-    // 3. Set vertex buffer
-    // 4. Draw with appropriate primitive topology
+    // Create vertex buffer
+    D3D11_BUFFER_DESC vertexBufferDesc = {};
+    vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+    vertexBufferDesc.ByteWidth = sizeof(Vertex) * static_cast<UINT>(vertices.size());
+    vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     
-    // For this example, we'll just log the operation
+    D3D11_SUBRESOURCE_DATA vertexData = {};
+    vertexData.pSysMem = vertices.data();
+    
+    ID3D11Buffer* vertexBuffer = nullptr;
+    HRESULT hr = m_device->CreateBuffer(&vertexBufferDesc, &vertexData, &vertexBuffer);
+    if (FAILED(hr)) {
+        return;
+    }
+    
+    // Set vertex buffer
+    UINT stride = sizeof(Vertex);
+    UINT offset = 0;
+    m_context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+    
+    // Set primitive topology to triangle fan
+    m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    
+    // Draw with triangle fan (we need to draw vertices.size()-1 points)
+    m_context->Draw(static_cast<UINT>(vertices.size()) - 1, 1); // Start from index 1 to skip center
+    
+    // Clean up temporary buffer
+    vertexBuffer->Release();
 }
 
 void DirectXRenderer::SetTransform(float x, float y, float rotation, float scale)
@@ -226,20 +305,71 @@ unsigned int DirectXRenderer::LoadTexture(const std::string& filename)
     // For this implementation, we'll generate a texture ID and store placeholder data
     unsigned int textureId = static_cast<unsigned int>(textures.size() + 1);
     
-    // In a real implementation, we would:
-    // 1. Load the image file using a library like WIC, STB, or DirectXTK
-    // 2. Create an ID3D11Texture2D object
-    // 3. Create an ID3D11ShaderResourceView for the texture
-    // 4. Store both in our texture map
+    // Create a simple colored texture for demonstration purposes
+    // In a real implementation, we would load from file using WIC or DirectXTK
+    const int width = 256;
+    const int height = 256;
+    const int pixelSize = 4; // RGBA
+    std::vector<unsigned char> textureData(width * height * pixelSize);
     
-    // For now, we'll just store the filename as a placeholder
-    TextureData textureData;
-    textureData.id = textureId;
-    textureData.filename = filename;
-    textureData.texture = nullptr;  // Would be an actual texture in real implementation
-    textureData.resourceView = nullptr;  // Would be an actual resource view in real implementation
+    // Create a simple pattern for the texture
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int index = (y * width + x) * pixelSize;
+            // Create a simple gradient pattern
+            textureData[index] = static_cast<unsigned char>((x * 255) / width);     // R
+            textureData[index + 1] = static_cast<unsigned char>((y * 255) / height); // G
+            textureData[index + 2] = 128;                                           // B
+            textureData[index + 3] = 255;                                           // A
+        }
+    }
     
-    textures[textureId] = textureData;
+    // Create texture description
+    D3D11_TEXTURE2D_DESC textureDesc = {};
+    textureDesc.Width = width;
+    textureDesc.Height = height;
+    textureDesc.MipLevels = 1;
+    textureDesc.ArraySize = 1;
+    textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    textureDesc.SampleDesc.Count = 1;
+    textureDesc.Usage = D3D11_USAGE_DEFAULT;
+    textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    textureDesc.CPUAccessFlags = 0;
+    textureDesc.MiscFlags = 0;
+    
+    D3D11_SUBRESOURCE_DATA initData = {};
+    initData.pSysMem = textureData.data();
+    initData.SysMemPitch = width * pixelSize;
+    initData.SysMemSlicePitch = 0;
+    
+    ID3D11Texture2D* texture = nullptr;
+    HRESULT hr = m_device->CreateTexture2D(&textureDesc, &initData, &texture);
+    if (FAILED(hr)) {
+        return 0; // Return 0 to indicate failure
+    }
+    
+    // Create shader resource view
+    ID3D11ShaderResourceView* resourceView = nullptr;
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format = textureDesc.Format;
+    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels = 1;
+    srvDesc.Texture2D.MostDetailedMip = 0;
+    
+    hr = m_device->CreateShaderResourceView(texture, &srvDesc, &resourceView);
+    if (FAILED(hr)) {
+        texture->Release();
+        return 0; // Return 0 to indicate failure
+    }
+    
+    // Store texture data
+    TextureData textureDataStruct;
+    textureDataStruct.id = textureId;
+    textureDataStruct.filename = filename;
+    textureDataStruct.texture = texture;
+    textureDataStruct.resourceView = resourceView;
+    
+    textures[textureId] = textureDataStruct;
     
     return textureId;
 }
@@ -263,24 +393,102 @@ unsigned int DirectXRenderer::LoadShader(const std::string& vertexShaderFile, co
     // For this implementation, we'll create a shader ID and store placeholder data
     unsigned int shaderId = static_cast<unsigned int>(shaders.size() + 1);
     
-    // In a real implementation, we would:
-    // 1. Read the shader files
-    // 2. Compile the vertex and fragment shaders using D3DCompile
-    // 3. Create shader objects
-    // 4. Create an input layout
-    // 5. Create a pixel shader
-    // 6. Store all these in a structure
+    // Create default vertex shader bytecode (a simple pass-through shader)
+    // This is a basic vertex shader that passes position through
+    const char* defaultVS = 
+        "struct VS_INPUT { float3 pos : POSITION; };"
+        "struct VS_OUTPUT { float4 pos : SV_POSITION; };"
+        "VS_OUTPUT main(VS_INPUT input) {"
+        "    VS_OUTPUT output;"
+        "    output.pos = float4(input.pos, 1.0f);"
+        "    return output;"
+        "}";
     
-    // For now, we'll just store the filenames as placeholders
+    // Create default pixel shader bytecode (a simple solid color shader)
+    const char* defaultPS = 
+        "struct VS_OUTPUT { float4 pos : SV_POSITION; };"
+        "float4 main(VS_OUTPUT input) : SV_TARGET {"
+        "    return float4(1.0f, 1.0f, 1.0f, 1.0f);"
+        "}";
+    
+    ID3DBlob* compiledVS = nullptr;
+    ID3DBlob* compiledPS = nullptr;
+    ID3DBlob* errorBlob = nullptr;
+    
+    // Compile vertex shader
+    HRESULT hr = D3DCompile(defaultVS, strlen(defaultVS), nullptr, nullptr, nullptr, "main", "vs_4_0", 
+                           0, 0, &compiledVS, &errorBlob);
+    if (FAILED(hr)) {
+        if (errorBlob) {
+            OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+            errorBlob->Release();
+        }
+        return 0; // Return 0 to indicate failure
+    }
+    
+    // Compile pixel shader
+    hr = D3DCompile(defaultPS, strlen(defaultPS), nullptr, nullptr, nullptr, "main", "ps_4_0", 
+                   0, 0, &compiledPS, &errorBlob);
+    if (FAILED(hr)) {
+        if (errorBlob) {
+            OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+            errorBlob->Release();
+        }
+        if (compiledVS) compiledVS->Release();
+        return 0; // Return 0 to indicate failure
+    }
+    
+    // Create shader objects
+    ID3D11VertexShader* vertexShader = nullptr;
+    hr = m_device->CreateVertexShader(compiledVS->GetBufferPointer(), compiledVS->GetBufferSize(), 
+                                      nullptr, &vertexShader);
+    if (FAILED(hr)) {
+        if (compiledVS) compiledVS->Release();
+        if (compiledPS) compiledPS->Release();
+        return 0; // Return 0 to indicate failure
+    }
+    
+    ID3D11PixelShader* pixelShader = nullptr;
+    hr = m_device->CreatePixelShader(compiledPS->GetBufferPointer(), compiledPS->GetBufferSize(), 
+                                     nullptr, &pixelShader);
+    if (FAILED(hr)) {
+        if (compiledVS) compiledVS->Release();
+        if (compiledPS) compiledPS->Release();
+        if (vertexShader) vertexShader->Release();
+        return 0; // Return 0 to indicate failure
+    }
+    
+    // Define input layout
+    D3D11_INPUT_ELEMENT_DESC inputLayoutDesc[] = {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+    };
+    
+    ID3D11InputLayout* inputLayout = nullptr;
+    hr = m_device->CreateInputLayout(inputLayoutDesc, 1, 
+                                     compiledVS->GetBufferPointer(), compiledVS->GetBufferSize(), 
+                                     &inputLayout);
+    if (FAILED(hr)) {
+        if (compiledVS) compiledVS->Release();
+        if (compiledPS) compiledPS->Release();
+        if (vertexShader) vertexShader->Release();
+        if (pixelShader) pixelShader->Release();
+        return 0; // Return 0 to indicate failure
+    }
+    
+    // Store shader data
     ShaderData shaderData;
     shaderData.id = shaderId;
     shaderData.vertexShaderFile = vertexShaderFile;
     shaderData.fragmentShaderFile = fragmentShaderFile;
-    shaderData.vertexShader = nullptr;    // Would be actual shader in real implementation
-    shaderData.pixelShader = nullptr;     // Would be actual shader in real implementation
-    shaderData.inputLayout = nullptr;     // Would be actual input layout in real implementation
+    shaderData.vertexShader = vertexShader;
+    shaderData.pixelShader = pixelShader;
+    shaderData.inputLayout = inputLayout;
     
     shaders[shaderId] = shaderData;
+    
+    // Clean up compiled shaders
+    compiledVS->Release();
+    compiledPS->Release();
     
     return shaderId;
 }
