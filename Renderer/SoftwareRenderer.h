@@ -23,6 +23,9 @@ public:
     virtual void SetTransform(float x, float y, float rotation, float scale = 1.0f) override;
     virtual unsigned int LoadTexture(const std::string& filename) override;
     virtual void UseTexture(unsigned int textureId) override;
+    virtual unsigned int LoadShader(const std::string& vertexShaderFile, const std::string& fragmentShaderFile) override;
+    virtual void UseShader(unsigned int shaderId) override;
+    virtual void SetSurface(unsigned int width, unsigned int height) override;
 
 private:
     HWND windowHandle;

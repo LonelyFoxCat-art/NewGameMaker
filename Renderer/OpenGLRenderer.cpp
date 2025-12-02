@@ -200,3 +200,26 @@ void OpenGLRenderer::UseTexture(unsigned int textureId)
         glDisable(GL_TEXTURE_2D);
     }
 }
+
+unsigned int OpenGLRenderer::LoadShader(const std::string& vertexShaderFile, const std::string& fragmentShaderFile)
+{
+    // 在实际实现中，这里需要加载并编译着色器
+    // 为了简化，我们返回0表示未实现
+    return 0;
+}
+
+void OpenGLRenderer::UseShader(unsigned int shaderId)
+{
+    // 在实际实现中，这里需要绑定着色器程序
+}
+
+void OpenGLRenderer::SetSurface(unsigned int width, unsigned int height)
+{
+    // 在实际实现中，这里需要调整渲染表面大小
+    // 例如重新配置视口、投影矩阵等
+    glViewport(0, 0, width, height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0.0, (GLdouble)width, (GLdouble)height, 0.0);
+    glMatrixMode(GL_MODELVIEW);
+}
