@@ -53,6 +53,7 @@ private:
         std::string fragmentShaderFile;
     };
     std::unordered_map<unsigned int, ShaderData> shaders;
+    unsigned int nextShaderId;     // Next shader ID to assign
     unsigned int currentShaderId;  // Currently active shader ID
 
     // Helper methods
