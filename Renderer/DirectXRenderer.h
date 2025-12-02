@@ -5,6 +5,25 @@
 #include <dxgi.h>
 #include <vector>
 #include <string>
+#include <unordered_map>
+
+// Texture data structure
+struct TextureData {
+    unsigned int id;
+    std::string filename;
+    ID3D11Texture2D* texture;
+    ID3D11ShaderResourceView* resourceView;
+};
+
+// Shader data structure
+struct ShaderData {
+    unsigned int id;
+    std::string vertexShaderFile;
+    std::string fragmentShaderFile;
+    ID3D11VertexShader* vertexShader;
+    ID3D11PixelShader* pixelShader;
+    ID3D11InputLayout* inputLayout;
+};
 
 // DirectX 11渲染器类
 class DirectXRenderer : public IRenderer
@@ -60,4 +79,10 @@ private:
     float m_transformX, m_transformY;
     float m_rotation;
     float m_scale;
+    
+    // Texture management
+    std::unordered_map<unsigned int, TextureData> textures;
+    
+    // Shader management
+    std::unordered_map<unsigned int, ShaderData> shaders;
 };

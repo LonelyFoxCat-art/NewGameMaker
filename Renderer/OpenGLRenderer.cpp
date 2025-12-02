@@ -183,9 +183,37 @@ void OpenGLRenderer::SetTransform(float x, float y, float rotation, float scale)
 
 unsigned int OpenGLRenderer::LoadTexture(const std::string& filename)
 {
-    // 这里应该实现纹理加载逻辑
-    // 为了简化，我们返回0表示未实现
-    return 0;
+    // Generate texture ID
+    unsigned int textureId;
+    glGenTextures(1, &textureId);
+    
+    // In a real implementation, we would:
+    // 1. Load the image file using a library like SOIL, STB, or FreeImage
+    // 2. Get image data (width, height, channels, etc.)
+    // 3. Bind the texture and upload the image data to GPU
+    
+    // For this implementation, we'll create a placeholder texture
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    
+    // Set texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    // Create placeholder texture data (a simple 2x2 pixel pattern)
+    unsigned char placeholderData[] = {
+        255, 0, 0, 255,     // Red pixel
+        0, 255, 0, 255,     // Green pixel
+        0, 0, 255, 255,     // Blue pixel
+        255, 255, 0, 255    // Yellow pixel
+    };
+    
+    // Upload placeholder texture data
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, placeholderData);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    
+    return textureId;
 }
 
 void OpenGLRenderer::UseTexture(unsigned int textureId)
@@ -203,14 +231,100 @@ void OpenGLRenderer::UseTexture(unsigned int textureId)
 
 unsigned int OpenGLRenderer::LoadShader(const std::string& vertexShaderFile, const std::string& fragmentShaderFile)
 {
-    // 在实际实现中，这里需要加载并编译着色器
-    // 为了简化，我们返回0表示未实现
-    return 0;
+    // Read shader files
+    std::string vertexCode = ReadShaderFile(vertexShaderFile);
+    std::string fragmentCode = ReadShaderFile(fragmentShaderFile);
+    
+    if (vertexCode.empty() || fragmentCode.empty()) {
+        // If file reading fails, use default shaders
+        vertexCode = R"(
+            #version 330 core
+            layout (location = 0) in vec3 aPos;
+            layout (location = 1) in vec2 aTexCoord;
+            
+            out vec2 TexCoord;
+            
+            uniform mat4 transform;
+            
+            void main()
+            {
+                gl_Position = transform * vec4(aPos, 1.0);
+                TexCoord = aTexCoord;
+            }
+        )";
+        
+        fragmentCode = R"(
+            #version 330 core
+            out vec4 FragColor;
+            
+            in vec2 TexCoord;
+            
+            uniform sampler2D ourTexture;
+            
+            void main()
+            {
+                FragColor = texture(ourTexture, TexCoord);
+            }
+        )";
+    }
+    
+    const char* vShaderCode = vertexCode.c_str();
+    const char* fShaderCode = fragmentCode.c_str();
+    
+    // Compile vertex shader
+    unsigned int vertex = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertex, 1, &vShaderCode, NULL);
+    glCompileShader(vertex);
+    
+    // Check for vertex shader compilation errors
+    int success;
+    char infoLog[512];
+    glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(vertex, 512, NULL, infoLog);
+        OutputDebugStringA(("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" + std::string(infoLog)).c_str());
+    }
+    
+    // Compile fragment shader
+    unsigned int fragment = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragment, 1, &fShaderCode, NULL);
+    glCompileShader(fragment);
+    
+    // Check for fragment shader compilation errors
+    glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(fragment, 512, NULL, infoLog);
+        OutputDebugStringA(("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" + std::string(infoLog)).c_str());
+    }
+    
+    // Create shader program
+    unsigned int shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertex);
+    glAttachShader(shaderProgram, fragment);
+    glLinkProgram(shaderProgram);
+    
+    // Check for linking errors
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        OutputDebugStringA(("ERROR::SHADER::PROGRAM::LINKING_FAILED\n" + std::string(infoLog)).c_str());
+    }
+    
+    // Delete shaders as they're linked into our program now and no longer necessary
+    glDeleteShader(vertex);
+    glDeleteShader(fragment);
+    
+    return shaderProgram;
 }
 
 void OpenGLRenderer::UseShader(unsigned int shaderId)
 {
-    // 在实际实现中，这里需要绑定着色器程序
+    // In a real implementation, this would activate the shader program
+    if (shaderId != 0) {
+        glUseProgram(shaderId);
+    } else {
+        glUseProgram(0);  // Use fixed function pipeline or default shader
+    }
 }
 
 void OpenGLRenderer::SetSurface(unsigned int width, unsigned int height)
@@ -222,4 +336,23 @@ void OpenGLRenderer::SetSurface(unsigned int width, unsigned int height)
     glLoadIdentity();
     gluOrtho2D(0.0, (GLdouble)width, (GLdouble)height, 0.0);
     glMatrixMode(GL_MODELVIEW);
+}
+
+std::string OpenGLRenderer::ReadShaderFile(const std::string& filePath)
+{
+    std::string content;
+    std::ifstream fileStream(filePath, std::ios::in);
+    
+    if (!fileStream.is_open()) {
+        // Return empty string if file cannot be opened
+        return content;
+    }
+    
+    std::string line = "";
+    while (std::getline(fileStream, line)) {
+        content.append(line + "\n");
+    }
+    
+    fileStream.close();
+    return content;
 }

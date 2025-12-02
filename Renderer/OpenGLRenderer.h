@@ -5,6 +5,9 @@
 #include <gl/GLU.h>
 #include <vector>
 #include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
 
 // OpenGL渲染器类
 class OpenGLRenderer : public IRenderer
@@ -57,4 +60,7 @@ private:
     float m_transformX, m_transformY;
     float m_rotation;
     float m_scale;
+    
+    // Helper methods
+    std::string ReadShaderFile(const std::string& filePath);
 };
