@@ -44,6 +44,16 @@ private:
     // Texture management
     std::unordered_map<unsigned int, HBITMAP> textures;
     unsigned int nextTextureId;
+    unsigned int currentTextureId;  // Currently bound texture ID
+
+    // Shader management
+    struct ShaderData {
+        unsigned int id;
+        std::string vertexShaderFile;
+        std::string fragmentShaderFile;
+    };
+    std::unordered_map<unsigned int, ShaderData> shaders;
+    unsigned int currentShaderId;  // Currently active shader ID
 
     // Helper methods
     void ClearBuffer();

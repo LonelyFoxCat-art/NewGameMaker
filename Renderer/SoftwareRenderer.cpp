@@ -6,7 +6,7 @@
 SoftwareRenderer::SoftwareRenderer()
     : windowHandle(nullptr), deviceContext(nullptr), memoryDC(nullptr), 
       bitmap(nullptr), oldBitmap(nullptr), pixelBuffer(nullptr), 
-      width(0), height(0), nextTextureId(1)
+      width(0), height(0), nextTextureId(1), currentTextureId(0), currentShaderId(0)
 {
     clearColor[0] = 0.0f; clearColor[1] = 0.0f; clearColor[2] = 0.0f; clearColor[3] = 1.0f;
     transform[0] = 0.0f; transform[1] = 0.0f; transform[2] = 0.0f; transform[3] = 1.0f;
@@ -185,14 +185,19 @@ void SoftwareRenderer::SetTransform(float x, float y, float rotation, float scal
 unsigned int SoftwareRenderer::LoadTexture(const std::string& filename)
 {
     // In a real implementation, this would load an image file
-    // For this example, we'll create a placeholder texture
+    // For this example, we'll create a placeholder texture based on the filename
     unsigned int textureId = nextTextureId++;
+    
+    // Check if the file exists and load accordingly
+    // For now, we'll create different patterns based on the filename
+    int width = 64;
+    int height = 64;
     
     // Create a simple placeholder bitmap (checkerboard pattern)
     BITMAPINFO bmi = {0};
     bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bmi.bmiHeader.biWidth = 64;
-    bmi.bmiHeader.biHeight = -64; // Negative for top-down bitmap
+    bmi.bmiHeader.biWidth = width;
+    bmi.bmiHeader.biHeight = -height; // Negative for top-down bitmap
     bmi.bmiHeader.biPlanes = 1;
     bmi.bmiHeader.biBitCount = 32;
     bmi.bmiHeader.biCompression = BI_RGB;
@@ -203,12 +208,26 @@ unsigned int SoftwareRenderer::LoadTexture(const std::string& filename)
     if (tempBitmap) {
         HBITMAP oldTempBitmap = static_cast<HBITMAP>(SelectObject(tempDC, tempBitmap));
         
-        // Draw a simple checkerboard pattern
-        for (int y = 0; y < 64; y++) {
-            for (int x = 0; x < 64; x++) {
-                BYTE r = ((x / 8) + (y / 8)) % 2 ? 255 : 128;
-                BYTE g = ((x / 8) + (y / 8)) % 2 ? 128 : 64;
-                BYTE b = ((x / 8) + (y / 8)) % 2 ? 64 : 255;
+        // Draw a simple pattern based on the filename
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                BYTE r, g, b;
+                
+                // Create different patterns based on filename
+                if (filename.find("checker") != std::string::npos) {
+                    r = ((x / 8) + (y / 8)) % 2 ? 255 : 128;
+                    g = ((x / 8) + (y / 8)) % 2 ? 128 : 64;
+                    b = ((x / 8) + (y / 8)) % 2 ? 64 : 255;
+                } else if (filename.find("gradient") != std::string::npos) {
+                    r = static_cast<BYTE>((x * 255) / width);
+                    g = static_cast<BYTE>((y * 255) / height);
+                    b = static_cast<BYTE>(128);
+                } else {
+                    // Default checkerboard pattern
+                    r = ((x / 4) + (y / 4)) % 2 ? 255 : 0;
+                    g = ((x / 4) + (y / 4)) % 2 ? 0 : 255;
+                    b = 255 - r;
+                }
                 
                 COLORREF color = RGB(r, g, b);
                 SetPixel(tempDC, x, y, color);
@@ -227,21 +246,47 @@ unsigned int SoftwareRenderer::LoadTexture(const std::string& filename)
 void SoftwareRenderer::UseTexture(unsigned int textureId)
 {
     // In a real implementation, this would bind the texture for rendering
-    // For this example, we just acknowledge the texture is being used
+    // For this example, we check if the texture exists and store it for use in rendering
+    if (textures.find(textureId) != textures.end()) {
+        currentTextureId = textureId;
+    } else {
+        currentTextureId = 0; // No texture
+    }
 }
 
 unsigned int SoftwareRenderer::LoadShader(const std::string& vertexShaderFile, const std::string& fragmentShaderFile)
 {
     // In a software renderer, shader loading would be a complex process
     // involving parsing and implementing shader programs in software
-    // For this example, we'll return 0 to indicate unimplemented
-    return 0;
+    // For this implementation, we'll create a basic shader ID system
+    unsigned int shaderId = nextTextureId++; // Use nextTextureId as shader ID counter
+    
+    // In a real implementation, we would:
+    // 1. Read the shader files
+    // 2. Parse the shader code
+    // 3. Convert to software-renderer compatible format
+    // 4. Store the compiled shader for later use
+    
+    // For now, we'll just store the filenames as a placeholder
+    ShaderData shaderData;
+    shaderData.vertexShaderFile = vertexShaderFile;
+    shaderData.fragmentShaderFile = fragmentShaderFile;
+    shaderData.id = shaderId;
+    
+    shaders[shaderId] = shaderData;
+    
+    return shaderId;
 }
 
 void SoftwareRenderer::UseShader(unsigned int shaderId)
 {
     // In a real implementation, this would activate the shader program
-    // For this example, we just acknowledge the shader is being used
+    // For this example, we check if the shader exists and store it for use
+    if (shaders.find(shaderId) != shaders.end()) {
+        currentShaderId = shaderId;
+    } else {
+        currentShaderId = 0; // No shader
+    }
 }
 
 void SoftwareRenderer::SetSurface(unsigned int width, unsigned int height)
