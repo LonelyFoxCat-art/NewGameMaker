@@ -638,9 +638,6 @@ void DirectXRenderer::UseShader(unsigned int shaderId)
 
 void DirectXRenderer::SetSurface(unsigned int width, unsigned int height)
 {
-    // 在实际实现中，这里需要调整渲染表面大小
-    // 例如重新配置视口、缓冲区等
-    
     if (!m_swapChain) return;
     
     // Release current render target view
