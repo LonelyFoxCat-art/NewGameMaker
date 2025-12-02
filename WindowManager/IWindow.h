@@ -24,6 +24,10 @@ public:
     virtual void GetPosition(int& x, int& y) const = 0;
     virtual void SetSize(int width, int height) = 0;
     virtual void GetSize(int& width, int& height) const = 0;
+    virtual int GetX() const = 0;
+    virtual int GetY() const = 0;
+    virtual int GetWidth() const = 0;
+    virtual int GetHeight() const = 0;
 
     // 渲染相关
     virtual void* GetNativeHandle() = 0;  // 获取原生窗口句柄

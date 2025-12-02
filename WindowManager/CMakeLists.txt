@@ -45,6 +45,10 @@ target_include_directories(windowmanager PRIVATE ../Renderer)
 add_executable(windowmanager_example WindowManagerExample.cpp)
 target_link_libraries(windowmanager_example windowmanager)
 
+# 创建窗口重叠边框处理示例
+add_executable(windowoverlap_example WindowOverlapExample.cpp)
+target_link_libraries(windowoverlap_example windowmanager)
+
 # 设置预处理器定义
 if(WIN32)
     target_compile_definitions(windowmanager PRIVATE _WIN32)

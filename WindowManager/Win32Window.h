@@ -23,6 +23,10 @@ public:
     void GetPosition(int& x, int& y) const override;
     void SetSize(int width, int height) override;
     void GetSize(int& width, int& height) const override;
+    int GetX() const override;
+    int GetY() const override;
+    int GetWidth() const override;
+    int GetHeight() const override;
 
     void* GetNativeHandle() override;
     void BeginRender() override;

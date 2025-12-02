@@ -140,6 +140,30 @@ void Win32Window::GetSize(int& width, int& height) const {
     }
 }
 
+int Win32Window::GetX() const {
+    int x, y;
+    GetPosition(x, y);
+    return x;
+}
+
+int Win32Window::GetY() const {
+    int x, y;
+    GetPosition(x, y);
+    return y;
+}
+
+int Win32Window::GetWidth() const {
+    int width, height;
+    GetSize(width, height);
+    return width;
+}
+
+int Win32Window::GetHeight() const {
+    int width, height;
+    GetSize(width, height);
+    return height;
+}
+
 void* Win32Window::GetNativeHandle() {
     return hwnd_;
 }
